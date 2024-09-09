@@ -31,6 +31,8 @@ export default function App(){
   const [showAddFriend, setShowAddFriend] = useState(false);
   const [selectFriend, setSelectFriend] = useState(null);
 
+  const [bill, setBill] = useState("");
+
   function handleFunction(){
     setShowAddFriend(!showAddFriend);
     
@@ -40,29 +42,41 @@ export default function App(){
     // setSelectFriend(friend);
     setSelectFriend((cur)=>cur?.id === friend?.id ? null : friend);
     setShowAddFriend(false);
+    setBill("");
+  }
+
+  function handleSplitBll(value){
+    console.log(value);
+    setFriends(friends => 
+      friends.map(friend =>
+        (friend.id === selectFriend.id ? 
+          {...friend, balance: friend.balance + value }: 
+          friend)));
+
+      setSelectFriend(null);
   }
   return <div className="app">
     <div className="sidebar">
     
-      <FriendLists friends={friends} handleSelection={handleSelection} selectFriend={selectFriend}/>
+      <FriendLists friends={friends} handleSelection={handleSelection} selectFriend={selectFriend} setBill={setBill}/>
       {showAddFriend && <AddFriendForm setFriends={setFriends} setShowAddFriend={setShowAddFriend} />}
       <Button onClick={handleFunction} >{showAddFriend? 'Close': 'Add friend'}</Button>
       
     </div>
 
-      {selectFriend && <FormSplitBill selectFriend={selectFriend}/>}
+      {selectFriend && <FormSplitBill selectFriend={selectFriend} handleSplitBll={handleSplitBll} bill={bill} setBill={setBill}/>}
 
   </div>
 }
 
-function FriendLists({friends, handleSelection, selectFriend}){
+function FriendLists({friends, handleSelection, selectFriend, setBill}){
   // const friends = initialFriends;
   return <ul>
-    {friends.map(friend => <Friend friend={friend} handleSelection={handleSelection}selectFriend={selectFriend} key={friend.id}/> )}
+    {friends.map(friend => <Friend friend={friend} handleSelection={handleSelection}selectFriend={selectFriend} key={friend.id} setBill={setBill}/> )}
   </ul>
 }
 
-function Friend({friend, handleSelection, selectFriend}){
+function Friend({friend, handleSelection, selectFriend, stBill}){
 
   const isSelected = selectFriend?.id === friend?.id;
 
@@ -130,9 +144,9 @@ function AddFriendForm({setFriends, setShowAddFriend}){
   )
 }
 
-function FormSplitBill ({selectFriend}){
+function FormSplitBill ({selectFriend, handleSplitBll, bill, setBill}){
 
-  const [bill, setBill] = useState("");
+  // const [bill, setBill] = useState("");
   const [payedByUser, setPayedByUser] = useState("");
   const payedByFriend = bill? bill-payedByUser : "";
 
@@ -142,6 +156,8 @@ function FormSplitBill ({selectFriend}){
     e.preventDefault();
 
     if(!bill || !payedByUser) return;
+
+    handleSplitBll(whoIsPaying === "user" ? payedByFriend : -payedByUser );
   }
   return (
     <form className="form-split-bill" onSubmit={handleSubmit}>
